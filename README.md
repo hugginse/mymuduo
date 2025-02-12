@@ -91,3 +91,18 @@ struct eventpoll{
     ...
 }
 ```
+
+## muduo网络库的核心代码模块
+1. Channel
+
+2. Poller和EPoller
+
+3. EventLoop-Reactor
+
+4. Thread和EventLoopThread
+
+5. EventLoopThreadPool
+
+6. Socket
+
+7. 

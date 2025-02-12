@@ -23,7 +23,7 @@ Channel::~Channel()
 {
 }
 
-// Channel::tie_方法在什么时候调用过?
+// Channel::tie_方法在什么时候调用过?   一个TcpConnection新连接创建的时候 TcpConnection => Channel
 void Channel::tie(const std::shared_ptr<void>& obj)
 {
     tie_ = obj;
