@@ -6,12 +6,24 @@
 #include <algorithm>
 
 
+/*
+ * a buffer class modeled arger org.jboss.netty.buffer.ChannelBuffer
+ *
+ *  @ code
+ *  +-------------------+----------------+----------------+
+ *  | prependable bytes | readable bytes | writable bytes |
+ *  |                   |    (CONTENT)   |                |
+ *  +-------------------+----------------+----------------+
+ *  |                   |                |                |
+ *  0      <==    readerIndex  <==   writerIndex  <==     size
+ *  @endcode
+*/
 // 网络库底层的缓冲器类型定义
 class Buffer
 {
 public:
-    static const size_t kCheapPrepend = 8;
-    static const size_t kInitialSize = 1024;
+    static const size_t kCheapPrepend = 8;                      // 初始预留的prependable空间大小
+    static const size_t kInitialSize = 1024;                    
 
     explicit Buffer(size_t initialSize = kInitialSize)
         : buffer_(kCheapPrepend + initialSize)
@@ -116,17 +128,17 @@ private:
     void makeSpace(size_t len)
     {
         /*
-        kCheapPrepend   |   reader  |   writer  |
-        kCheapPrepend   |          len             |
+        | kCheapPrepend | xxxx | reader | writer |      // xxxx表示reader中的已读部分
+        | kCheapPrepend | reader |       len             |
         */
-        if (writableBytes() + prependableBytes() < len + kCheapPrepend)
+        if (writableBytes() + prependableBytes() < len + kCheapPrepend)     // len > xxxx前面剩余部分 + write部分
         {
             buffer_.resize(writerIndex_ + len);
         }
-        else
+        else        // len <= xxxx + write 把reader搬到从xxxx开始, 使得xxxx后面是一段连续的空间
         {
-            // move readable date to the front, make space inside buffer
-            size_t readable = readableBytes();
+            size_t readable = readableBytes();          // readable = reader长度
+            // 将当前缓冲区中从readerIndex_到writeIndex_的数据, 拷贝到缓冲区起始位置kCheapPrepend处, 腾出更多可写空间
             std::copy(begin() + readerIndex_,
                 begin() + writerIndex_,
                 begin() + kCheapPrepend);

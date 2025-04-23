@@ -9,6 +9,7 @@ const int Channel::kNoneEvent = 0;
 const int Channel::kReadEvent = EPOLLIN | EPOLLPRI;
 const int Channel::kWriteEvent = EPOLLOUT;
 
+// EventLoop: ChannelList Poller
 Channel::Channel(EventLoop *loop, int fd)
     : loop_(loop)
     , fd_(fd)
@@ -24,6 +25,11 @@ Channel::~Channel()
 }
 
 // Channel::tie_方法在什么时候调用过?   一个TcpConnection新连接创建的时候 TcpConnection => Channel
+/*
+ * TcpConnection中注册了Channel对应的回调函数，传入回调函数均为TcpConnection对象得分成员方法。
+ * 因此，可以说明的一点就是：Channel的结束一定早于TcpConnection对象
+ * 此处用tie去解决TcpConnection的Channel的生命周期时长的问题，从而保证了Channel对象能够在TcpConnection销毁前销毁。
+*/
 void Channel::tie(const std::shared_ptr<void>& obj)
 {
     tie_ = obj;
@@ -42,7 +48,7 @@ void Channel::update()
 
 void Channel::remove()
 {
-    // 在Channel所属的EventLoop中，把当前二点Channel删除掉
+    // 在Channel所属的EventLoop中，把当前的Channel删除掉
     loop_->removeChannel(this);
 }
 

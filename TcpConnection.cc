@@ -36,7 +36,7 @@ TcpConnection::TcpConnection(EventLoop *loop,
     , channel_(new Channel(loop, sockfd))
     , localAddr_(localAddr)
     , peerAddr_(peerAddr)
-    , highWaterMark_(64*1024*1024)
+    , highWaterMark_(64*1024*1024)  // 64Mb
 {
     // 下面给channel设置相应的回调函数, poller给channel通知感兴趣的事件发生, channel会回调相应的操作函数
     channel_->setReadCallback(
@@ -130,7 +130,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
 
     // 说明当前这一个write, 并没有把数据全部发送出去, 剩余的额数据需要保存到缓冲区当中, 然后给channel注册epollout事件
     // poller发现tcp的发送缓冲区有空间, 会通知相应的sock->channel, 调用writeCallback_回调方法
-    // 也就是调用TcpConnection：：handleWrite方法, 把发送缓冲区的数据全部发送完成
+    // 也就是调用TcpConnection::handleWrite方法, 把发送缓冲区的数据全部发送完成
     if (!faultError && remaining > 0)
     {
         // 目前发送缓冲区剩余的待发送数据的长度
@@ -167,7 +167,7 @@ void TcpConnection::shutdownInLoop()
 {
     if (!channel_->isWriting())     // 说明outputBuffer中的数据已经发送完成了
     {
-        socket_->shotdownWrite();
+        socket_->shutdownWrite();   // 关闭写端
     }
 }
 

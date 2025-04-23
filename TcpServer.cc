@@ -6,7 +6,7 @@
 #include "Logger.h"
 #include "TcpConnection.h"
 
-EventLoop* CheckLoopNotNull(EventLoop *loop)
+static EventLoop* CheckLoopNotNull(EventLoop *loop)
 {
     if (loop == nullptr)
     {
@@ -16,9 +16,9 @@ EventLoop* CheckLoopNotNull(EventLoop *loop)
 }
 
 TcpServer::TcpServer(EventLoop *loop,
-            const InetAddress &listenAddr,
-            const std::string &nameArg,
-            Option option)
+                        const InetAddress &listenAddr,
+                        const std::string &nameArg,
+                        Option option)
             : loop_(CheckLoopNotNull(loop))
             , ipPort_(listenAddr.toIpPort())
             , name_(nameArg)
@@ -65,14 +65,14 @@ void TcpServer::start()
     }
 }
 
-// 有一个新的客户端的连接, acceptor会执行这个回调操作
+// 有一个新的客户端的连接, acceptor会执行这个回调操作, 负责将mainLoop接收到的请求连接(acceptChannel_会有读事件发生)通过回调轮询分发给subLoop处理
 void TcpServer::newConnection(int sockfd, const InetAddress &peerAddr)
 {
     // 轮询算法, 选择一个subLoop, 来管理channel
     EventLoop *ioLoop = threadPool_->getNextLoop();
     char buf[64] = { 0 };
     snprintf(buf, sizeof buf, "-%s#%d", ipPort_.c_str(), nextConnId_);
-    ++nextConnId_;
+    ++nextConnId_;              // 这里没有设置为原子类型是因为其只在mainLoop中执行, 不设计线程安全
     std::string connName = name_ + buf;
 
     LOG_INFO("TcpServer::newConnection [%s] - new connection [%s] from %s \n",
@@ -108,7 +108,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress &peerAddr)
         std::bind(&TcpServer::removeConnection, this, std::placeholders::_1)
     );
 
-    // 直接调用TcpConnection：：connectEstablished
+    // 直接调用TcpConnection::connectEstablished
     ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished, conn));
 }
 

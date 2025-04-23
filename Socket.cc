@@ -49,7 +49,7 @@ int Socket::accept(InetAddress *peeraddr)
     return connfd;
 }
 
-void Socket::shotdownWrite()
+void Socket::shutdownWrite()
 {
     if (::shutdown(sockfd_, SHUT_WR) < 0)
     {

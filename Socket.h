@@ -20,10 +20,14 @@ public:
     void listen();
     int accept(InetAddress *peeraddr);
 
-    void shotdownWrite();
+    void shutdownWrite();
+    // 设置Nagel算法
     void setTcpNoDelay(bool on);
+    // 设置地址复用
     void setReuseAddr(bool on);
+    // 设置端口复用
     void setReusePort(bool on);
+    // 设置长连接
     void setKeepAlive(bool on);
 
 private:

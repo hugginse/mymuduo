@@ -6,6 +6,7 @@
 
 namespace CurrentThread
 {
+    //__thread <==> thread_local
     extern __thread int t_cachedTid;
 
     void cacheTid();

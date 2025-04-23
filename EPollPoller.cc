@@ -11,7 +11,7 @@
 const int kNew = -1;        // Channel类成员index_= -1
 // channel 已经添加到poller中
 const int kAdded = 1;
-// channel从poller中删除
+// channel 从poller中删除
 const int kDeleted = 2;
 
 EPollPoller::EPollPoller(EventLoop *loop)
@@ -32,12 +32,12 @@ EPollPoller::~EPollPoller()
 
 Timestamp EPollPoller::poll(int timeoutMs, ChannelList *activeChannels)
 {
-    // 实际上应该用LOG_DEBUG输出日志更为合理
-    //LOG_DEBUG("func%s => fd total count:%d\n", channels_.size());
-    LOG_INFO("func%s => fd total count:%lu\n", __FUNCTION__ ,channels_.size());
+    // 由于频繁调用epoll, 实际上应该用LOG_DEBUG输出日志更为合理, 当遇到并发场景 关闭DEBUG日志提升效率
+    LOG_DEBUG("func%s => fd total count:%d\n", __FUNCTION__, channels_.size());
+    //LOG_INFO("func%s => fd total count:%lu\n", __FUNCTION__ ,channels_.size());
     
     int numEvents = ::epoll_wait(epollfd_, &*events_.begin(), static_cast<int>(events_.size()), timeoutMs);
-    int savedErrno = errno;
+    int savedErrno = errno;     // 把当前loop发生的errno暂存下来
     Timestamp now(Timestamp::now());
 
     if (numEvents > 0)
@@ -45,7 +45,7 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList *activeChannels)
         // LOG_DEBUG("%d events happened \n", numEvents);
         LOG_INFO("%d events happened \n", numEvents);
         fillActiveChannels(numEvents, activeChannels);
-        if (numEvents == events_.size())
+        if (numEvents == events_.size())    // 扩容操作
         {
             events_.resize(events_.size() * 2);
         }
@@ -67,7 +67,7 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList *activeChannels)
 
 // 重写基类Poller的抽象方法
 /*
- * Channel update remove => EventLoop updateChannel
+ * Channel update remove => EventLoop updateChannel removeChannel
  * 
  *                  EventLoop   poller.poll
  *  ChannelList                 Poller
@@ -84,6 +84,8 @@ void EPollPoller::updateChannel(Channel *channel)
             int fd = channel->fd();
             channels_[fd] = channel;
         }
+        else   // index == kDeleted
+        {}
         
         channel->set_index(kAdded);
         update(EPOLL_CTL_ADD, channel);
@@ -104,7 +106,7 @@ void EPollPoller::updateChannel(Channel *channel)
     }
 }
 
-// 从poller中删除
+// 从poller中删除Channel
 void EPollPoller::removeChannel(Channel *channel)
 {
     int fd = channel->fd();
@@ -133,7 +135,7 @@ void EPollPoller::fillActiveChannels(int numEvents, ChannelList *activeChannels)
     }
 }
 
-// 更新channel通道
+// 更新channel通道  epoll_ctl  add/mod/del
 void EPollPoller::update(int operation, Channel *channel)
 {
     epoll_event event;

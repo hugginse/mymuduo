@@ -25,7 +25,7 @@ Thread::~Thread()
     }
 }
 
-void Thread::start()        // 一个Thread对象, 记录的就是一个新线程的详细信息
+void Thread::start()            // 一个Thread对象, 记录的就是一个新线程的详细信息
 {
     started_ = true;
     sem_t sem;

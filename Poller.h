@@ -10,8 +10,8 @@
 class Channel;
 class EventLoop;
 
-// muduo库中多路事件分发器的和兴IO复用模块
-class Poller
+// muduo库中多路事件分发器的核心IO复用模块
+class Poller : noncopyable
 {
 public:
     using ChannelList = std::vector<Channel*>;

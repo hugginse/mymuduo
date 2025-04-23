@@ -36,10 +36,11 @@ uint16_t InetAddress::toPort() const
 }
 
 
+/*
 #include <iostream>
 int main()
 {
     InetAddress addr(8080);
     std::cout << addr.toIpPort() << std::endl;
     return 0;
-}
+}*/

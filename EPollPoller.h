@@ -22,7 +22,7 @@ public:
     EPollPoller(EventLoop *loop);
     ~EPollPoller() override;
 
-    // 重写基类的抽象方法
+    // 重写基类Poller的抽象方法
     Timestamp poll(int timeoutMs, ChannelList *activeChannels) override;
     void updateChannel(Channel *channel) override;
     void removeChannel(Channel *channel) override;
@@ -36,8 +36,8 @@ private:
 
     using EventList = std::vector<epoll_event>;
 
-    int epollfd_;
-    EventList events_;
+    int epollfd_;               // epoll_create创建返回的fd保存在epollfd_中
+    EventList events_;          // 用于存放epoll_wait返回的所有发生的事件的文件描述符事件集合
 };
 
 #endif

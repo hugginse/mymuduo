@@ -27,22 +27,25 @@ Acceptor::Acceptor(EventLoop *loop, const InetAddress &listenAddr, bool reusepor
     acceptSocket_.setReuseAddr(true);
     acceptSocket_.setReusePort(true);
     acceptSocket_.bindAddress(listenAddr);      // bind
-    // TcpServer::start()  Acceptor.listen 有新用户的连接, 要执行一个回调(connfd->channel->subloop)
+    // TcpServer::start()  Acceptor.listen 有新用户的连,接 要执行一个回调(connfd->channel->subloop)
     // baseLoop -> acceptChannel_(listenfd)=>
     acceptChannel_.setReadCallback(std::bind(&Acceptor::handleRead, this));
 }
 
 Acceptor::~Acceptor()
 {
+    // 把从Poller中感兴趣的事件删除
     acceptChannel_.disableAll();
+    // 调用EventLoop->removeChannel  ->  Poller->removeChannel 把Poller的ChannelMap对应的部分删除
     acceptChannel_.remove();
 }
 
+// 监听本地端口
 void Acceptor::listen()
 {
     listenning_ = true;
-    acceptSocket_.listen();     // listen 
-    acceptChannel_.enableReading();     // acceptChannel_ => Poller 
+    acceptSocket_.listen();             // listen 
+    acceptChannel_.enableReading();     // acceptChannel_ => Poller acceptChannel_注册至Poller
 
 }
 
