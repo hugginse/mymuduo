@@ -304,3 +304,9 @@ TcpServer::~TcpServer()
 * subLoop线程执行`TcpConnection::connectDestroyed()`函数
 
 * mainLoop线程的一轮for循环执行完毕，conn离开代码块，因此被析构，但是TcpConnection对象还不会被释放，因为还有一个共享指针指针指向这个TcpConnection对象，这个指针在`TcpConnection::connectDestroyed()`函数中，其存在形式是一个隐式的this。当这个函数执行完毕之后，这个智能指针被释放。此时TcpConnection对象的引用计数变为0，该TcpConnection对象被析构。
+
+# 致谢
+
+* [作者-陈硕][https://github.com/chenshuo/muduo](https://github.com/chenshuo/muduo)
+* 《Linux高性能服务器编程》
+* 《Linux多线程服务端编程：使用muduo C++网络库》

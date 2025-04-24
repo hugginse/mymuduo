@@ -41,7 +41,7 @@ public:
     ~TcpServer();
 
     void setThreadIinitCallback(const ThreadInitCallback &cb) { threadInitCallback_ = cb; }
-    void setConnectonCallback(const ConnectionCallback &cb) { connectionCallback_ = cb;}
+    void setConnectionCallback(const ConnectionCallback &cb) { connectionCallback_ = cb;}
     void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
     void setWriteCompleteCallback(const WriteCompleteCallback &cb) { writeCompleteCallback_ = cb; }
 
